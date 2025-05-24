@@ -103,6 +103,57 @@ const stockData = [
     }
 ];
 
+app.get('/api/exchanges', (req, res) => {
+    try {
+        const exchanges = stockData.map(exchange => ({
+            code: exchange.code,
+            name: exchange.stockExchange
+        }));
+        res.json(exchanges);
+    } catch (error) {
+        console.error('Error fetching exchanges:', error);
+        res.status(500).json({ error: 'Failed to fetch exchanges' });
+    }
+});
+
+app.get('/api/stocks/:exchangeCode', (req, res) => {
+    try {
+        const exchangeCode = req.params.exchangeCode.toUpperCase();
+        const exchange = stockData.find(e => e.code === exchangeCode);
+        
+        if (!exchange) {
+            return res.status(404).json({ error: 'Exchange not found' });
+        }
+        
+        res.json(exchange.topStocks);
+    } catch (error) {
+        console.error('Error fetching stocks:', error);
+        res.status(500).json({ error: 'Failed to fetch stocks' });
+    }
+});
+
+app.get('/api/stock/:exchangeCode/:stockCode', (req, res) => {
+    try {
+        const { exchangeCode, stockCode } = req.params;
+        const exchange = stockData.find(e => e.code === exchangeCode.toUpperCase());
+        
+        if (!exchange) {
+            return res.status(404).json({ error: 'Exchange not found' });
+        }
+        
+        const stock = exchange.topStocks.find(s => s.code === stockCode.toUpperCase());
+        
+        if (!stock) {
+            return res.status(404).json({ error: 'Stock not found' });
+        }
+        
+        res.json(stock);
+    } catch (error) {
+        console.error('Error fetching stock price:', error);
+        res.status(500).json({ error: 'Failed to fetch stock price' });
+    }
+});
+
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
